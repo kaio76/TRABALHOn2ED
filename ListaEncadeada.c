@@ -3,111 +3,110 @@
 #include <string.h>
 
 int cont = 0;
-// Estrutura da tarefa
-typedef struct Task {
+
+typedef struct Tarefa {
     int id;
-    char description[256];
-    struct Task* next;
-    struct Task* prev;
-} Task;
+    char descricao[256];
+    struct Tarefa* next;
+    struct Tarefa* prev;
+} Tarefa;
 
-// Estrutura da lista de tarefas
-typedef struct TaskList {
-    Task* head;
-    Task* tail;
-} TaskList;
 
-// Função para criar uma nova lista de tarefas
-TaskList* createTaskList() {
-    TaskList* list = (TaskList*)malloc(sizeof(TaskList));
-    list->head = NULL;
-    list->tail = NULL;
-    return list;
+typedef struct ListaDeTarefas {
+    Tarefa* head;
+    Tarefa* tail;
+} ListaDeTarefas;
+
+ListaDeTarefas* CriarListaDeTarefas() {
+    ListaDeTarefas* lista = (ListaDeTarefas*)malloc(sizeof(ListaDeTarefas));
+    lista->head = NULL;
+    lista->tail = NULL;
+    return lista;
 }
 
-// Função para inserir uma nova tarefa
-void insertTask(TaskList* list, int id, const char* description) {
-    Task* newTask = (Task*)malloc(sizeof(Task));
-    newTask->id = id;
-    strncpy(newTask->description, description, 256);
-    newTask->next = NULL;
-    newTask->prev = list->tail;
 
-    if (list->tail) {
-        list->tail->next = newTask;
+void InserirTarefa(ListaDeTarefas* lista, int id, const char* descricao) {
+    Tarefa* novaTarefa = (Tarefa*)malloc(sizeof(Tarefa));
+    novaTarefa->id = id;
+    strncpy(novaTarefa->descricao, descricao, 256);
+    novaTarefa->next = NULL;
+    novaTarefa->prev = lista->tail;
+
+    if (lista->tail) {
+        lista->tail->next = novaTarefa;
     } else {
-        list->head = newTask; // Se a lista estava vazia, a nova tarefa é o head
+        lista->head = novaTarefa;
     }
-    list->tail = newTask;
+    lista->tail = novaTarefa;
     cont++;
 }
 
-// Função para remover uma tarefa
-void removeTask(TaskList* list, int id) {
-    Task* current = list->head;
 
-    while (current) {
-        if (current->id == id) {
-            if (current->prev) {
-                current->prev->next = current->next;
+void removerTarefa(ListaDeTarefas* lista, int id) {
+    Tarefa* tarefaAtual = lista->head;
+
+    while (tarefaAtual) {
+        if (tarefaAtual->id == id) {
+            if (tarefaAtual->prev) {
+                tarefaAtual->prev->next = tarefaAtual->next;
             } else {
-                list->head = current->next; // Se for o head, atualiza o head
+                lista->head = tarefaAtual->next; 
             }
-            if (current->next) {
-                current->next->prev = current->prev;
+            if (tarefaAtual->next) {
+                tarefaAtual->next->prev = tarefaAtual->prev;
             } else {
-                list->tail = current->prev; // Se for o tail, atualiza o tail
+                lista->tail = tarefaAtual->prev;
             }
-            free(current);
+            free(tarefaAtual);
             return;
         }
-        current = current->next;
+        tarefaAtual = tarefaAtual->next;
     }
 }
 
-// Função para encontrar uma tarefa
-Task* findTask(TaskList* list, int id) {
-    Task* current = list->head;
 
-    while (current) {
-        if (current->id == id) {
-            return current;
+Tarefa* encontrarTarefa(ListaDeTarefas* lista, int id) {
+    Tarefa* tarefaAtual = lista->head;
+
+    while (tarefaAtual) {
+        if (tarefaAtual->id == id) {
+            return tarefaAtual;
         }
-        current = current->next;
+        tarefaAtual = tarefaAtual->next;
     }
     return NULL;
 }
 
-// Função para imprimir uma tarefa
-void printTask(Task* task) {
-    if (task) {
-        printf("ID: %d, Description: %s\n", task->id, task->description);
+
+void imprimirTarefa(Tarefa * tarefas) {
+    if (tarefas) {
+        printf("ID: %d, Descricao: %s\n", tarefas->id, tarefas->descricao);
     } else {
-        printf("Task not found.\n");
+        printf("Tarefa não encontrada.\n");
     }
 }
 
-// Função para imprimir todas as tarefas
-void printAllTasks(TaskList* list) { 
-    Task* current = list->head; 
-    if (!current) { 
-        printf("No tasks in the list.\n");
+
+void ImprimirTodasAsTarefas(ListaDeTarefas* lista) { 
+    Tarefa* tarefaAtual = lista->head; 
+    if (!tarefaAtual) { 
+        printf("Não tem tarefas na lista.\n");
         return;
     } 
-    printf("All tasks:\n"); 
-    while (current) {
-        printTask(current);
-        current = current->next; 
+    printf("Todas as tarefas:\n"); 
+    while (tarefaAtual) {
+        imprimirTarefa(tarefaAtual);
+        tarefaAtual = tarefaAtual->next; 
     }  
 }
 
-// Função principal
+
 int main() {
-    TaskList* myTasks = createTaskList();
+    ListaDeTarefas* minhaTarefa = CriarListaDeTarefas();
     int option = 0;
 
-    while (1) { // Loop para manter o menu ativo
-        printf("GERENCIADOR DE TAREFAS\n");
+    while (1) { 
+        printf("GERENCIADOR DE TAREFAS\n\n");
         printf("1 - INSERIR UMA TAREFA\n");
         printf("2 - REMOVER UMA TAREFA\n");
         printf("3 - ENCONTRAR UMA TAREFA PELO ID\n");
@@ -119,51 +118,52 @@ int main() {
         switch (option) {
         case 1: {
             char str[256];  
-            printf("Digite a descrição da tarefa:\n");
-            printf("**Inserindo uma task**\n");
-            scanf(" %[^\n]s", str); // Lê a string incluindo espaços
-            insertTask(myTasks, cont, str);
-            printf("Nova tarefa criada\n");
-            Task* task = findTask(myTasks, cont - 1); // id deve ser cont - 1
+            printf("\nDigite a descrição da tarefa:\n");
+            scanf(" %[^\n]s", str);
+            printf("\n**Inserindo uma Tarefa**\n"); 
+            InserirTarefa(minhaTarefa, cont, str);
+            printf("\nNova tarefa criada\n");
+            Tarefa* task = encontrarTarefa(minhaTarefa, cont - 1); 
             printf("----------------------\n");
-            printTask(task);
+            imprimirTarefa(task);
             break;
         }
         case 2: {
             int remocao = 0;
-            printf("Digite o ID da tarefa que deseja excluir\n");
-            printf("**Removendo uma task**\n");
+            printf("\nDigite o ID da tarefa que deseja excluir\n");
             scanf("%d", &remocao);
-            removeTask(myTasks, remocao);
+            printf("\n**Removendo uma Tarefa**\n");
+            
+            removerTarefa(minhaTarefa, remocao);
             break;
         }
         case 3: {
             int idTarefa = 0;
-            printf("Digite o ID da tarefa que deseja encontrar\n");
-            printf("**Procurando uma task**\n");
+            printf("\nDigite o ID da tarefa que deseja encontrar\n");
+            printf("\n**Procurando uma Tarefa**\n");
             scanf("%d", &idTarefa);
-            printf("------------------------\n");
-            Task* task = findTask(myTasks, idTarefa);
-            printTask(task);
+            printf("\n------------------------\n");
+            Tarefa* task = encontrarTarefa(minhaTarefa, idTarefa);
+            imprimirTarefa(task);
             break;
         }
         case 4:
-            printf("Mostrando todas as tasks\n");
-            printAllTasks(myTasks);
+            printf("\nMostrando todas as Tarefas\n");
+            ImprimirTodasAsTarefas(minhaTarefa);
             break;
         case 5: {
-            // Libera todos os nós antes de sair
-            Task* current = myTasks->head;
+            
+            Tarefa* current = minhaTarefa->head;
             while (current) {
-                Task* toFree = current;
+                Tarefa* toFree = current;
                 current = current->next;
                 free(toFree);
             }
-            free(myTasks);
-            return 0; // Sai do programa
+            free(minhaTarefa);
+            return 0; 
         }
         default:
-            printf("Valor incorreto.\n");
+            printf("\nValor incorreto.\n");
             break;
         }
     }
