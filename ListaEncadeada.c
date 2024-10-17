@@ -74,13 +74,50 @@ void imprimirTarefas(Tarefa *tarefa) {
     printf("\n");
 }
 
+void insertionSort(Tarefa **lista) {
+    if (*lista == NULL) {
+        return; // Se a lista estiver vazia, não há nada a ordenar
+    }
+
+    Tarefa *sorted = NULL; // Lista ordenada
+
+    Tarefa *current = *lista;
+    while (current != NULL) {
+        Tarefa *next = current->next;
+
+        // Insere o nó atual na posição correta da lista ordenada
+        if (sorted == NULL || sorted->valor >= current->valor) {
+            current->next = sorted;
+            if (sorted != NULL) {
+                sorted->prev = current;
+            }
+            sorted = current;
+            sorted->prev = NULL;
+        } else {
+            Tarefa *temp = sorted;
+            while (temp->next != NULL && temp->next->valor < current->valor) {
+                temp = temp->next;
+            }
+            current->next = temp->next;
+            if (temp->next != NULL) {
+                temp->next->prev = current;
+            }
+            temp->next = current;
+            current->prev = temp;
+        }
+
+        current = next;
+    }
+
+    *lista = sorted; // Atualiza a lista original para apontar para a lista ordenada
+}
 int main() {
     Tarefa *buscar, *removido, *lista = NULL;
     int opcao;
     int id;
     char str[256];
     do {
-        printf("\nLISTA DE TAREFAS\n1 - Inserir Tarefa\n2 - Remover Tarefa\n3 - Buscar Tarefa\n4 - Listar Tarefas\n0 - Sair\n");
+        printf("\nLISTA DE TAREFAS\n1 - Inserir Tarefa\n2 - Remover Tarefa\n3 - Buscar Tarefa\n4 - Listar Tarefas\n5 - Ordenar lista\n0 - Sair\n");
         scanf("%d", &opcao);
         switch(opcao) {
             case 1:
@@ -116,6 +153,12 @@ int main() {
             case 4:
                 imprimirTarefas(lista);
                 break;
+            case 5:
+                insertionSort(&lista);
+                printf("\nTarefas ordenadas com sucesso!\n");
+                imprimirTarefas(lista);
+                break;
+
             default:
                 if(opcao != 0) {
                     printf("Valor invalido");
